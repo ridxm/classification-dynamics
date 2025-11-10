@@ -1,0 +1,242 @@
+{
+  "dataset_name": "CartPole PyBullet Trajectories",
+  "description": "Dataset of cartpole stabilization trajectories generated using LQR controller with PyBullet physics simulation.",
+
+  "generation_parameters": {
+    "initial_state_bounds": {
+      "x": {
+        "min": -6.0,
+        "max": 6.0,
+        "unit": "m",
+        "description": "Cart position"
+      },
+      "x_dot": {
+        "min": -5.0,
+        "max": 5.0,
+        "unit": "m/s",
+        "description": "Cart velocity (initial sampling range only)"
+      },
+      "theta": {
+        "min": -3.141592653589793,
+        "max": 3.141592653589793,
+        "unit": "rad",
+        "description": "Pole angle (default: ��)"
+      },
+      "theta_dot": {
+        "min": -5.0,
+        "max": 5.0,
+        "unit": "rad/s",
+        "description": "Pole angular velocity (initial sampling range only)"
+      }
+    },
+    "termination_conditions": {
+      "success": {
+        "name": "Goal State Reached",
+        "condition": "State converges to [0, 0, 0, 0] within tolerance for specified duration",
+        "tolerance": {
+          "x": "< 0.01 m",
+          "theta": "< 0.05 rad",
+          "x_dot": "< 0.05 m/s",
+          "theta_dot": "< 0.05 rad/s",
+          "duration": "0.1s (10 consecutive steps)"
+        },
+        "description": "Trajectory successfully stabilizes the cartpole at the origin"
+      },
+      "failure": {
+        "name": "State Out of Bounds",
+        "condition": "Any state variable exceeds its termination threshold",
+        "bounds": {
+          "x": {
+            "threshold": 6.0,
+            "unit": "m",
+            "reason": "Cart position exceeds safe operating range"
+          },
+          "x_dot": {
+            "threshold": 5.0,
+            "unit": "m/s",
+            "reason": "Cart velocity becomes too high (control failed to stabilize)"
+          },
+          "theta": {
+            "threshold": "inf",
+            "unit": "rad",
+            "reason": "No angular limit (pole can fully rotate)"
+          },
+          "theta_dot": {
+            "threshold": 5.0,
+            "unit": "rad/s",
+            "reason": "Pole angular velocity becomes too high"
+          }
+        },
+        "description": "Trajectory fails when controller cannot stabilize the system"
+      },
+      "timeout": {
+        "name": "Maximum Episode Length Exceeded",
+        "condition": "Trajectory reaches max_steps (1000 steps) without success or failure",
+        "max_steps": 1000,
+        "max_duration": "10 seconds",
+        "probability": "Rare (0% in this dataset)",
+        "description": "Episode forcibly terminated after reaching maximum allowed duration"
+      }
+    },
+    "discretization_resolution": 0.5,
+    "termination_thresholds": {
+      "x_termination": 6.0,
+      "x_dot_termination": 5.0,
+      "theta_termination": "inf",
+      "theta_dot_termination": 5.0,
+      "description": "Trajectories terminate when any state's absolute value exceeds these bounds"
+    },
+    "dynamics_constraints": {
+      "x_dot_limit": "inf",
+      "theta_dot_limit": "inf",
+      "description": "NO velocity clipping during simulation - velocities can exceed initial bounds but will be terminated when they exceed them"
+    },
+    "control_parameters": {
+      "control_bound": 2000.0,
+      "unit": "N",
+      "description": "Maximum control force applied to cart, clipped to [-2000, +2000] N"
+    },
+    "simulation_parameters": {
+      "save_freq": 0.01,
+      "ctrl_freq": 100,
+      "pyb_freq": 5000,
+      "ctrl_timestep": 0.01,
+      "physics_timestep": 0.0002,
+      "steps_per_control": 50,
+      "max_steps": 1000,
+      "episode_len_sec": 10,
+      "description": "Control at 100 Hz (dt=0.01s), physics simulation at 5000 Hz, states saved every 0.01s"
+    },
+    "controller": {
+      "type": "LQR",
+      "discrete_dynamics": true,
+      "q_lqr": [1, 1, 1, 1],
+      "r_lqr": [0.1],
+      "task": "stabilization",
+      "goal_state": [0, 0, 0, 0],
+      "description": "Linear Quadratic Regulator for stabilization to origin"
+    }
+  },
+
+  "dataset_statistics": {
+    "total_trajectories": 116242,
+    "successful_trajectories": {
+      "count": 20887,
+      "percentage": 17.97,
+      "description": "Trajectories that reached the goal state"
+    },
+    "failed_trajectories": {
+      "count": 95355,
+      "percentage": 82.03,
+      "description": "Trajectories that exceeded termination thresholds"
+    },
+    "timeout_trajectories": {
+      "count": 0,
+      "percentage": 0.0,
+      "description": "Trajectories that reached max_steps without terminating"
+    },
+    "max_trajectory_length": 613,
+    "max_trajectory_length_unit": "states",
+    "max_trajectory_duration_seconds": 6.13
+  },
+
+  "achieved_bounds": {
+    "description": "Actual min/max values achieved across all trajectories",
+    "x": {
+      "min": -6.044173,
+      "max": 6.047770,
+      "unit": "m",
+      "prev_at_min": {
+        "x": -5.998,
+        "theta": -0.039,
+        "x_dot": -4.686,
+        "theta_dot": 4.348
+      },
+      "prev_at_max": {
+        "x": 5.999,
+        "theta": 0.054,
+        "x_dot": 4.815,
+        "theta_dot": -3.570
+      },
+      "note": "Exceeds bounds slightly (~0.047m) due to control timestep (dt=0.01s) before termination check"
+    },
+    "theta": {
+      "min": -3.141593,
+      "max": 3.141592,
+      "unit": "rad",
+      "prev_at_max": {
+        "x": 0.479,
+        "theta": -3.131,
+        "x_dot": -2.748,
+        "theta_dot": 0.128
+      },
+      "note": "Spans full rotation range ��"
+    },
+    "x_dot": {
+      "min": -7.314936,
+      "max": 7.337680,
+      "unit": "m/s",
+      "prev_at_min": {
+        "x": -5.171,
+        "theta": -3.123,
+        "x_dot": -4.932,
+        "theta_dot": -4.653
+      },
+      "prev_at_max": {
+        "x": 4.050,
+        "theta": 3.068,
+        "x_dot": 4.970,
+        "theta_dot": 4.974
+      },
+      "note": "EXCEEDS initial bounds (�5.0) because velocity clipping is disabled - natural dynamics"
+    },
+    "theta_dot": {
+      "min": -8.499409,
+      "max": 8.571074,
+      "unit": "rad/s",
+      "prev_at_min": {
+        "x": -5.521,
+        "theta": -3.133,
+        "x_dot": -3.635,
+        "theta_dot": -4.960
+      },
+      "prev_at_max": {
+        "x": 5.036,
+        "theta": 3.121,
+        "x_dot": 4.320,
+        "theta_dot": 4.996
+      },
+      "note": "EXCEEDS initial bounds (�5.0) because velocity clipping is disabled - natural dynamics"
+    }
+  },
+
+  "physical_parameters": {
+    "gravity": 9.8,
+    "cart_mass": 1.0,
+    "pole_mass": 0.1,
+    "pole_length": 0.5,
+    "pole_effective_length": 0.5,
+    "units": {
+      "gravity": "m/s^2",
+      "mass": "kg",
+      "length": "m"
+    }
+  },
+
+  "data_format": {
+    "file_format": "text (.txt)",
+    "file_naming": "sequence_{i}.txt where i is the trajectory index (0 to 116241)",
+    "line_format": "x,theta,x_dot,theta_dot",
+    "precision": 6,
+    "delimiter": ",",
+    "state_order": ["x", "theta", "x_dot", "theta_dot"],
+    "state_units": ["m", "rad", "m/s", "rad/s"],
+    "notes": [
+      "Each line represents one state at a control timestep (100 Hz = 0.01s intervals)",
+      "First line is the initial state",
+      "Last line is either goal state or out-of-bounds state that triggered termination",
+      "No header row in files",
+      "Values are separated by commas with no spaces"
+    ]
+  }
+}
