@@ -1,0 +1,187 @@
+{
+  "dataset_name": "Mountain Car Trajectories (Power 0.0008)",
+  "description": "Dataset of mountain car control trajectories where the car must reach a goal region on the hill. This variant uses power parameter 0.0008 for the actuation dynamics, making the task more challenging due to lower actuation power.",
+
+  "generation_parameters": {
+    "task": "mountain_car_goal_reaching",
+    "goal": "Navigate the car to reach the goal region centered at x = π/6",
+    "power": {
+      "value": 0.0008,
+      "description": "Actuation power parameter that scales the applied force in the dynamics equation: velocity += (force * power - 0.0025 * cos(3 * position)) * dt",
+      "variants": {
+        "high_power": 0.001,
+        "medium_power": 0.0008
+      },
+      "note": "Lower power (0.0008) makes the task harder compared to 0.001 variant"
+    },
+    "success_condition": {
+      "metric": "position_and_velocity",
+      "position_threshold": 0.05,
+      "velocity_threshold": 0.02,
+      "description": "Success is achieved when |position - π/6| < 0.05 AND |velocity| < 0.02",
+      "formula": "(np.abs(final_states[..., 0] - np.pi/6) < 0.05) & (np.abs(final_states[..., 1]) < 0.02)",
+      "goal_center": 0.523599,
+      "goal_center_symbolic": "π/6"
+    },
+    "simulation_parameters": {
+      "timestep": 0.1,
+      "timestep_unit": "s",
+      "max_path_length": 3000,
+      "max_episode_duration": 300.0,
+      "max_episode_duration_unit": "s",
+      "description": "Simulation at 10 Hz (dt=0.1s), maximum 3000 timesteps (300 seconds)"
+    },
+    "physics_parameters": {
+      "gravity_component": 0.0025,
+      "terrain_function": "sin(3 * x)",
+      "force_dynamics": "velocity += (force * power - 0.0025 * cos(3 * position)) * dt"
+    }
+  },
+
+  "state_space": {
+    "total_dimensions": 2,
+    "components": {
+      "position": {
+        "dimensions": 1,
+        "indices": "0",
+        "description": "Position of the car on the mountain terrain (x-coordinate)",
+        "unit": "rad",
+        "limits": {
+          "min": -2.0,
+          "max": 1.0,
+          "description": "Hard position limits enforced by walls. Car can push against walls with non-zero velocity."
+        }
+      },
+      "velocity": {
+        "dimensions": 1,
+        "indices": "1",
+        "description": "Velocity of the car",
+        "unit": "rad/s",
+        "limits": {
+          "min": -0.1,
+          "max": 0.1,
+          "description": "Hard velocity limits enforced by clamping"
+        }
+      }
+    },
+    "state_order": [
+      "position (0)",
+      "velocity (1)"
+    ]
+  },
+
+  "manifold_structure": {
+    "type": "Euclidean",
+    "description": "The state space is 2D Euclidean R^2",
+    "dimensions": 2,
+    "components": "position, velocity"
+  },
+
+  "sampling_strategy": {
+    "method": "uniform_grid",
+    "description": "Initial states sampled on a uniform grid covering the entire valid state space",
+    "resolution": 0.005,
+    "position_samples": 600,
+    "velocity_samples": 40,
+    "total_samples": 24000,
+    "position_range": {
+      "min": -1.9999998808,
+      "max": 0.9999999404,
+      "description": "Float32-safe limits to prevent exceeding [-2, 1] bounds"
+    },
+    "velocity_range": {
+      "min": -0.0999999940,
+      "max": 0.0999999940,
+      "description": "Float32-safe limits to prevent exceeding [-0.1, 0.1] bounds"
+    },
+    "float_precision": {
+      "type": "float32",
+      "note": "Initial states generated as float32 to match environment precision and avoid boundary violations"
+    }
+  },
+
+  "control_parameters": {
+    "control_type": "neural_network_policy",
+    "controller": "DR (Distributionally Robust)",
+    "control_bounds": {
+      "min": -2.0,
+      "max": 2.0,
+      "description": "Control input bounds"
+    },
+    "state_transformation": {
+      "description": "State is transformed before feeding to controller: [sin(position), cos(position), velocity]",
+      "input_dimension": 3
+    }
+  },
+
+  "boundary_behavior": {
+    "position_limits": {
+      "method": "wall_clamping",
+      "description": "Position clamped to [-2, 1] when boundaries are reached. Velocity is NOT reset to zero, allowing the car to 'push against walls'."
+    },
+    "velocity_limits": {
+      "method": "hard_clamping",
+      "description": "Velocity clamped to [-0.1, 0.1] through hard limits"
+    }
+  },
+
+  "data_format": {
+    "file_format": "text (.txt)",
+    "directory_structure": {
+      "trajectories/": "Contains trajectory state sequences (sequence_{i}.txt)",
+      "actions/": "Contains control action sequences (actions_{i}.txt)",
+      "values/": "Contains Lyapunov function values (values_{i}.txt)"
+    },
+    "file_naming": {
+      "trajectories": "sequence_{i}.txt where i is the trajectory index (0 to 23999)",
+      "actions": "actions_{i}.txt where i is the trajectory index (0 to 23999)",
+      "values": "values_{i}.txt where i is the trajectory index (0 to 23999)"
+    },
+    "line_format": {
+      "trajectories": "2 comma-separated values: position, velocity",
+      "actions": "single value: control action",
+      "values": "single value: Lyapunov function value"
+    },
+    "delimiter": ",",
+    "precision": "variable (typically 6-15 decimal places)",
+    "state_order": [
+      "position[0]",
+      "velocity[1]"
+    ],
+    "notes": [
+      "Each line in trajectory file represents one state at a simulation timestep (0.1s intervals)",
+      "First line is the initial state from the sampling grid",
+      "Last line is the final state after 3000 timesteps or earlier termination",
+      "No header row in files",
+      "Trajectory lengths are fixed at 3000 timesteps (300 seconds)",
+      "Actions and values files have same number of lines as trajectory files minus one (no action/value for final state)"
+    ]
+  },
+
+  "additional_files": {
+    "roa_labels.txt": {
+      "description": "Region of attraction labels for trajectories - maps initial state to success label",
+      "format": "2 comma-separated initial state values (position, velocity) followed by label (0 or 1)",
+      "success_criteria": {
+        "position_condition": "|final_position - π/6| < 0.05",
+        "velocity_condition": "|final_velocity| < 0.02",
+        "combined": "Both conditions must be satisfied for success",
+        "goal_region": {
+          "position_range": [0.473599, 0.573599],
+          "velocity_range": [-0.02, 0.02],
+          "center": [0.523599, 0.0],
+          "center_symbolic": ["π/6", "0"]
+        }
+      }
+    }
+  },
+
+  "dataset_characteristics": {
+    "environment": "Continuous Mountain Car",
+    "terrain": "Sinusoidal hills with height = sin(3 * x)",
+    "goal_location": "Right hill peak region near π/6 ≈ 0.524 rad",
+    "challenge": "Significantly underpowered system (power=0.0008) requiring careful momentum management",
+    "difficulty": "Higher than power=0.001 variant due to reduced actuation authority",
+    "state_space_coverage": "Complete uniform coverage of valid state space [-2, 1] × [-0.1, 0.1]"
+  }
+}
