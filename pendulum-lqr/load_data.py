@@ -1,9 +1,10 @@
 """
-Load Pendulum Cartesian trajectory data and prepare for training.
+Load Pendulum LQR trajectory data and prepare for training.
 Follows the same approach as cartpole:
 - Load trajectories and break into individual datapoints
 - Each timestep becomes a separate datapoint with the trajectory's label
-- Normalize all features by dividing by max values
+- Transform theta (first element) to sin(theta) and cos(theta)
+- Apply normalization (normalize all features)
 """
 
 import numpy as np
@@ -12,8 +13,24 @@ from pathlib import Path
 
 LOCAL_DIR = Path(__file__).parent
 # Data is in shared directory
-SHARED_DATA_DIR = Path("/common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_cartesian_50k")
+SHARED_DATA_DIR = Path("/common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_lqr_50k")
 TRAJECTORIES_DIR = SHARED_DATA_DIR / "trajectories"
+
+def transform_theta_to_sincos_timestep(timestep):
+    """
+    Transform a single data point (timestep).
+    Input: [theta, theta_dot] (2 features) - first element is theta
+    Output: [sin(theta), cos(theta), theta_dot] (3 features)
+    """
+    theta = timestep[0]  # First element is theta
+    theta_dot = timestep[1]
+    
+    # Transform theta to sin/cos
+    sin_theta = np.sin(theta)
+    cos_theta = np.cos(theta)
+    
+    # Return: [sin(theta), cos(theta), theta_dot]
+    return np.array([sin_theta, cos_theta, theta_dot], dtype=np.float32)
 
 def load_individual_datapoints(sequence_files, labels, start_index, set_name, traj_dir='trajectories'):
     """
@@ -28,7 +45,7 @@ def load_individual_datapoints(sequence_files, labels, start_index, set_name, tr
         traj_dir: Directory containing trajectory files
     
     Returns:
-        X: Array of shape (num_datapoints, 4) - individual state vectors [feature_0, feature_1, feature_2, feature_3]
+        X: Array of shape (num_datapoints, 3) - individual state vectors [sin(theta), cos(theta), theta_dot]
         y: Array of shape (num_datapoints,) - labels (1 or 0)
     """
     X_datapoints = []
@@ -45,7 +62,7 @@ def load_individual_datapoints(sequence_files, labels, start_index, set_name, tr
         if not os.path.exists(traj_path):
             continue
         
-        # Load trajectory file (each line is a state vector: [feature_0, feature_1, feature_2, feature_3])
+        # Load trajectory file (each line is a state vector: [theta, theta_dot])
         trajectory = np.loadtxt(traj_path, delimiter=',')
         if trajectory.ndim == 1:
             # Single timestep trajectory
@@ -59,8 +76,8 @@ def load_individual_datapoints(sequence_files, labels, start_index, set_name, tr
         # Break trajectory into individual data points
         # Each timestep becomes a separate datapoint with the trajectory's label
         for timestep in trajectory:
-            # No transformation needed - use features as-is
-            datapoint = timestep.astype(np.float32)
+            # Transform: [theta, theta_dot] -> [sin(theta), cos(theta), theta_dot]
+            datapoint = transform_theta_to_sincos_timestep(timestep)
             X_datapoints.append(datapoint)
             y_datapoints.append(trajectory_label)  # All timesteps from this trajectory get the same label
         
@@ -81,9 +98,9 @@ def load_individual_datapoints(sequence_files, labels, start_index, set_name, tr
     return X_datapoints, y_datapoints
 
 
-def load_pendulum_cartesian_data(train_size=1000, val_size=500):
+def load_pendulum_lqr_data(train_size=1000, val_size=500):
     """
-    Load training and validation data for Pendulum Cartesian.
+    Load training and validation data for Pendulum LQR.
     
     Args:
         train_size: Number of sequences for training (default: 1000)
@@ -93,7 +110,7 @@ def load_pendulum_cartesian_data(train_size=1000, val_size=500):
         (X_train, y_train), (X_val, y_val), feature_max
     """
     print("=" * 80)
-    print("LOADING PENDULUM CARTESIAN TRAJECTORY DATA")
+    print("LOADING PENDULUM LQR TRAJECTORY DATA")
     print("=" * 80)
     
     # Load shuffled indices
@@ -132,7 +149,7 @@ def load_pendulum_cartesian_data(train_size=1000, val_size=500):
     
     # Normalize all features
     print(f"\nNormalizing training data...")
-    print(f"  Normalizing all features [0, 1, 2, 3]")
+    print(f"  Normalizing all features [0, 1, 2]")
     X_train = X_train / feature_max
     X_val = X_val / feature_max
     
@@ -171,7 +188,7 @@ def load_test_data(test_start_index=1000, feature_max=None):
         raise ValueError("feature_max must be provided for test data normalization!")
     
     # Load roa_labels.txt - each row is already an individual datapoint
-    # Format: [feature_0, feature_1, feature_2, feature_3, label] (5 columns)
+    # Format: [theta, theta_dot, label] (3 columns)
     print(f"\nLoading test data from roa_labels.txt (starting from row {test_start_index})...")
     labels_file = SHARED_DATA_DIR / "roa_labels.txt"
     labels_data = np.loadtxt(labels_file, delimiter=',')
@@ -183,16 +200,24 @@ def load_test_data(test_start_index=1000, feature_max=None):
     print(f"Test datapoints: {len(test_data)}")
     
     # Extract features and labels
-    # Features: columns 0-3 are [feature_0, feature_1, feature_2, feature_3]
-    # Label: column 4 (last column)
-    X_test = test_data[:, :4].astype(np.float32)  # [feature_0, feature_1, feature_2, feature_3]
-    y_test = test_data[:, 4].astype(int)  # Labels
+    # Features: columns 0-1 are [theta, theta_dot]
+    # Label: column 2 (last column)
+    test_features_raw = test_data[:, :2]  # [theta, theta_dot]
+    y_test = test_data[:, 2].astype(int)  # Labels
+    
+    # Transform theta to sin/cos for each datapoint
+    print(f"\nTransforming theta to sin/cos...")
+    X_test = []
+    for timestep in test_features_raw:
+        transformed = transform_theta_to_sincos_timestep(timestep)
+        X_test.append(transformed)
+    X_test = np.array(X_test, dtype=np.float32)
     
     # Normalize test data using the same max values from training
     # Normalize all features
     print(f"\nNormalizing test data using training max values...")
     print(f"Feature max values: {feature_max}")
-    print(f"Normalizing all features [0, 1, 2, 3]")
+    print(f"Normalizing all features [0, 1, 2]")
     X_test = X_test / feature_max
     
     print(f"X_test shape: {X_test.shape}  (datapoints, features)")
@@ -205,5 +230,5 @@ def load_test_data(test_start_index=1000, feature_max=None):
 
 
 if __name__ == "__main__":
-    X_train, y_train, X_val, y_val, feature_max = load_pendulum_cartesian_data()
+    X_train, y_train, X_val, y_val, feature_max = load_pendulum_lqr_data()
 
