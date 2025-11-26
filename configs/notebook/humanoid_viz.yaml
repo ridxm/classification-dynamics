@@ -1,0 +1,49 @@
+# Humanoid notebook visualization and analysis configuration
+# This config contains ALL parameters used in notebooks - no hardcoded values!
+
+# ============================================================================
+# DATA PATHS (all in shared directory)
+# ============================================================================
+data:
+  data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/humanoid_get_up
+  roa_labels_file: /common/users/shared/pracsys/genMoPlan/data_trajectories/humanoid_get_up/roa_labels_normalized.txt
+  checkpoint_path: outputs/humanoid_classifier/best.ckpt
+  
+  # Data loading parameters (not used - splits based on 80/20)
+  train_size: 1000  # Not used - data splits automatically
+  val_size: 500     # Not used - data splits automatically
+
+# ============================================================================
+# TRAINING PARAMETERS
+# ============================================================================
+training:
+  batch_size: 512        # Batch size for training
+  learning_rate: 0.001   # Learning rate (matches training config)
+  num_epochs: 50         # Number of epochs to train
+
+# ============================================================================
+# MODEL ARCHITECTURE (matches training config)
+# ============================================================================
+model:
+  input_dim: 67          # State dimension: 67 joint positions/velocities
+  hidden_dims: [128, 256, 128, 64]  # Hidden layer sizes
+  output_dim: 2          # Binary classification
+  dropout: 0.3           # Dropout probability
+
+# ============================================================================
+# VISUALIZATION PARAMETERS
+# ============================================================================
+viz:
+  figsize: [12, 8]       # Figure size (width, height) in inches
+  dpi: 150               # Resolution for saved figures
+  colormap: viridis      # Color scheme for plots
+
+# ============================================================================
+# ANALYSIS PARAMETERS
+# ============================================================================
+analysis:
+  num_samples: 1000      # Number of samples for analysis
+  batch_size: 256        # Batch size for evaluation
+  confidence_threshold: 0.5  # Classification threshold
+
+

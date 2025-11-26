@@ -1,0 +1,8 @@
+# @package _global_.system
+_target_: src.systems.pendulum_lqr.PendulumLQRSystem
+# Note: Raw state_dim is 2 [theta, theta_dot], but after transformation it's 3
+# The model should use input_dim=3 to match the transformed features
+state_dim: 2  # Raw state dimension
+action_dim: 1
+
+

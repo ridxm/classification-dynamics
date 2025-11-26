@@ -1,0 +1,12 @@
+# CartPole PyBullet data configuration
+_target_: src.data.cartpole_pybullet_data.CartPolePyBulletDataModule
+data_file: data/cartpole_pybullet/roa_labels.txt  # Ignored if data_dir is set
+data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/cartpole_pybullet
+batch_size: ${batch_size}
+num_workers: 4
+train_size: 1000
+val_size: 500
+use_weighted_sampler: true
+pin_memory: true
+
+

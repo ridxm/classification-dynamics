@@ -1,0 +1,6 @@
+# @package _global_.system
+_target_: src.systems.pendulum_cartesian.PendulumCartesianSystem
+state_dim: 4
+action_dim: 1
+
+

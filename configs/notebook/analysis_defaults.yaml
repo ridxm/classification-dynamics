@@ -1,0 +1,16 @@
+# Default notebook configuration parameters
+# These are merged with system-specific configs
+
+viz:
+  figsize: [12, 8]
+  dpi: 150
+  colormap: viridis
+  
+phase_space:
+  grid_resolution: 100
+  
+analysis:
+  num_samples: 1000
+  batch_size: 256
+
+

@@ -1,0 +1,9 @@
+# Medium classifier model configuration
+_target_: src.models.classifier.Classifier
+input_dim: ${system.state_dim}  # Will be overridden by system config
+hidden_dims: [64, 128, 256, 128, 64]
+output_dim: 2
+dropout: 0.3
+use_batch_norm: true
+
+

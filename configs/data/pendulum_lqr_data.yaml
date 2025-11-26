@@ -1,0 +1,12 @@
+# Pendulum LQR data configuration
+_target_: src.data.pendulum_lqr_data.PendulumLQRDataModule
+data_file: data/pendulum_lqr/roa_labels.txt
+data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_lqr_50k
+batch_size: ${batch_size}
+num_workers: 4
+train_size: 500
+val_size: 500
+use_weighted_sampler: true
+pin_memory: true
+
+

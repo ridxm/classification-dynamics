@@ -30,6 +30,18 @@ ENV/
 .ipynb_checkpoints
 *.ipynb_checkpoints/
 
+# PyTorch
+*.pth
+*.pt
+
+# Hydra outputs
+outputs/
+.hydra/
+
+# Data files (trajectories can be large)
+data/*/trajectories/
+*.npz
+
 # IDE
 .vscode/
 .idea/
@@ -41,10 +53,12 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Data files and datasets
-*.npz
-*.pth
-*.png
-*.csv
-trajectories/
+# Logs
+*.log
 
+# Checkpoints (keep structure but ignore files)
+outputs/*/checkpoints/*.ckpt
+!outputs/*/checkpoints/.gitkeep
+
+# Archive folder (old code preserved for reference)
+archive/

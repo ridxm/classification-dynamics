@@ -1,0 +1,60 @@
+# CartPole PyBullet notebook visualization and analysis configuration
+# This config contains ALL parameters used in notebooks - no hardcoded values!
+
+# ============================================================================
+# DATA PATHS (all in shared directory)
+# ============================================================================
+data:
+  data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/cartpole_pybullet
+  trajectories_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/cartpole_pybullet/trajectories
+  roa_labels_file: /common/users/shared/pracsys/genMoPlan/data_trajectories/cartpole_pybullet/roa_labels.txt
+  shuffled_indices_file: /common/users/shared/pracsys/genMoPlan/data_trajectories/cartpole_pybullet/shuffled_indices.txt
+  dataset_description_file: /common/users/shared/pracsys/genMoPlan/data_trajectories/cartpole_pybullet/dataset_description.json
+  checkpoint_path: outputs/cartpole_pybullet_classifier/best.ckpt
+  
+  # Data loading parameters
+  train_size: 1000  # Number of trajectories for training
+  val_size: 500      # Number of trajectories for validation
+
+# ============================================================================
+# TRAINING PARAMETERS
+# ============================================================================
+training:
+  batch_size: 512        # Batch size for training
+  learning_rate: 0.001   # Learning rate (matches training config)
+  num_epochs: 50         # Number of epochs to train
+
+# ============================================================================
+# MODEL ARCHITECTURE (matches training config)
+# ============================================================================
+model:
+  input_dim: 5           # After transformation: [x, sin(theta), cos(theta), x_dot, theta_dot]
+  hidden_dims: [128, 256, 128, 64]  # Hidden layer sizes
+  output_dim: 2          # Binary classification
+  dropout: 0.3           # Dropout probability
+
+# ============================================================================
+# VISUALIZATION PARAMETERS
+# ============================================================================
+viz:
+  figsize: [12, 8]       # Figure size (width, height) in inches
+  dpi: 150               # Resolution for saved figures
+  
+  # Phase space visualization
+  phase_space:
+    x_lim: [-6.0, 6.0]   # Cart position bounds
+    y_lim: [-3.14, 3.14] # Pole angle bounds
+    grid_resolution: 100 # Grid points per dimension
+    x_label: "Cart Position (m)"
+    y_label: "Pole Angle (rad)"
+    colormap: viridis     # Color scheme for plots
+
+# ============================================================================
+# ANALYSIS PARAMETERS
+# ============================================================================
+analysis:
+  num_samples: 1000      # Number of samples for analysis
+  batch_size: 256        # Batch size for evaluation
+  confidence_threshold: 0.1  # Classification threshold (0.1/0.9 for threshold-based)
+
+

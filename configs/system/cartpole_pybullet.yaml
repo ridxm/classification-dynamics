@@ -1,0 +1,7 @@
+# @package _global_.system
+_target_: src.systems.cartpole_pybullet.CartPolePyBulletSystem
+state_dim: 4  # Raw state: [x, theta, x_dot, theta_dot]
+action_dim: 1
+# Note: Model input is 5 features after theta->sin/cos transformation: [x, sin(theta), cos(theta), x_dot, theta_dot]
+
+

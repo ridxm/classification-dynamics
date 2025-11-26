@@ -1,0 +1,12 @@
+# Mountain Car data configuration
+_target_: src.data.mountain_car_data.MountainCarDataModule
+data_file: data/mountain_car/roa_labels.txt  # Ignored if data_dir is set
+data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/mountain_car_power_0p0008
+batch_size: ${batch_size}
+num_workers: 4
+train_size: 1000
+val_size: 500
+use_weighted_sampler: true
+pin_memory: true
+
+

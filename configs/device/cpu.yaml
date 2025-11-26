@@ -1,0 +1,6 @@
+# CPU device configuration
+device_id: "cpu"
+accelerator: cpu
+devices: 1
+
+

@@ -1,0 +1,6 @@
+# @package _global_.system
+_target_: src.systems.humanoid.HumanoidSystem
+state_dim: 67
+action_dim: 67
+
+

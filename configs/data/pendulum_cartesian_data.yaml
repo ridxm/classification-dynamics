@@ -1,0 +1,12 @@
+# Pendulum Cartesian data configuration
+_target_: src.data.pendulum_cartesian_data.PendulumCartesianDataModule
+data_file: data/pendulum_cartesian/roa_labels.txt
+data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_cartesian_50k
+batch_size: ${batch_size}
+num_workers: 4
+train_size: 1000
+val_size: 500
+use_weighted_sampler: true
+pin_memory: true
+
+

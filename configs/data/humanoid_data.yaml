@@ -1,0 +1,12 @@
+# Humanoid data configuration
+_target_: src.data.humanoid_data.HumanoidDataModule
+data_file: data/humanoid/roa_labels_normalized.txt  # Ignored if data_dir is set
+data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/humanoid_get_up
+batch_size: ${batch_size}
+num_workers: 4
+train_size: 1000  # Not used - splits based on 80/20
+val_size: 500  # Not used - splits based on 80/20
+use_weighted_sampler: true
+pin_memory: true
+
+

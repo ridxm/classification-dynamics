@@ -1,0 +1,61 @@
+# Pendulum LQR notebook visualization and analysis configuration
+# This config contains ALL parameters used in notebooks - no hardcoded values!
+
+# ============================================================================
+# DATA PATHS (all in shared directory)
+# ============================================================================
+data:
+  data_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_lqr_50k
+  trajectories_dir: /common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_lqr_50k/trajectories
+  roa_labels_file: /common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_lqr_50k/roa_labels.txt
+  shuffled_indices_file: /common/users/shared/pracsys/genMoPlan/data_trajectories/pendulum_lqr_50k/shuffled_indices.txt
+  checkpoint_path: outputs/pendulum_lqr_classifier/best.ckpt
+  
+  # Data loading parameters
+  train_size: 500  # Number of trajectories for training
+  val_size: 500    # Number of trajectories for validation
+
+# ============================================================================
+# TRAINING PARAMETERS
+# ============================================================================
+training:
+  batch_size: 32         # Batch size for training
+  learning_rate: 0.001   # Learning rate (matches training config)
+  num_epochs: 50         # Number of epochs to train
+
+# ============================================================================
+# MODEL ARCHITECTURE (matches training config)
+# ============================================================================
+model:
+  input_dim: 3           # State dimension after sin/cos transformation: [sin(theta), cos(theta), theta_dot]
+  hidden_dims: [64, 128, 64, 32]  # Hidden layer sizes
+  output_dim: 2         # Binary classification
+  dropout: 0.3          # Dropout probability
+
+# ============================================================================
+# VISUALIZATION PARAMETERS
+# ============================================================================
+viz:
+  figsize: [12, 8]       # Figure size (width, height) in inches
+  dpi: 150               # Resolution for saved figures
+  
+  # Phase space visualization
+  phase_space:
+    x_lim: [-1.0, 1.0]   # sin(theta) bounds
+    y_lim: [-1.0, 1.0]   # cos(theta) bounds
+    z_lim: [-5.0, 5.0]   # theta_dot bounds (for 3D plots)
+    grid_resolution: 100 # Grid points per dimension
+    x_label: "sin(theta)"
+    y_label: "cos(theta)"
+    z_label: "theta_dot"
+    colormap: viridis    # Color scheme for plots
+
+# ============================================================================
+# ANALYSIS PARAMETERS
+# ============================================================================
+analysis:
+  num_samples: 1000      # Number of samples for analysis
+  batch_size: 256        # Batch size for evaluation
+  confidence_threshold: 0.5  # Classification threshold
+
+
